@@ -1,7 +1,10 @@
 CREATE TABLE short_urls (
     id INTEGER PRIMARY KEY,
+    code TEXT NOT NULL UNIQUE,
     original_url TEXT NOT NULL,
-    created_at TEXT  DEFAULT CURRENT_TIMESTAMP
+    custom_alias TEXT UNIQUE,
+    created_at TEXT  DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TEXT DEFAULT NULL
 );
 
 CREATE TABLE forbidden_words (
