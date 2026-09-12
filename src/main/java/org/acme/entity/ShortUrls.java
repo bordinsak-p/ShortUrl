@@ -12,10 +12,10 @@ public class ShortUrls {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "code")
+    @Column(name = "code", nullable = false, unique = true)
     private String code;
 
-    @Column(name = "original_url")
+    @Column(name = "original_url", nullable = false)
     private String originalUrl;
 
     @Column(name = "created_at")

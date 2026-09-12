@@ -1,0 +1,1 @@
+INSERT INTO forbidden_words (word) VALUES ('javascript:'), ('data:'), ('file:');

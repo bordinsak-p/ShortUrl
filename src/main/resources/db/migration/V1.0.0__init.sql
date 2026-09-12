@@ -4,3 +4,8 @@ CREATE TABLE short_urls (
     original_url TEXT NOT NULL,
     created_at TEXT  DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE forbidden_words (
+    id INTEGER PRIMARY KEY,
+    word TEXT NOT NULL UNIQUE
+);
