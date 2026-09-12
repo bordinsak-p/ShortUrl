@@ -1,19 +1,27 @@
 package org.acme.dto;
 
 import io.smallrye.common.constraint.NotNull;
+import org.acme.annotation.NoForbiddenWords;
+import org.acme.annotation.OutOfLengthUrl;
 
 public class ShortDto {
     @NotNull
-    private String code;
-
-    @NotNull
+    @OutOfLengthUrl
+    @NoForbiddenWords
     private String originalUrl;
 
     public ShortDto() {
     }
 
-    public ShortDto(String code, String originalUrl) {
-        this.code = code;
+    public ShortDto(String originalUrl) {
+        this.originalUrl = originalUrl;
+    }
+
+    public String getOriginalUrl() {
+        return originalUrl;
+    }
+
+    public void setOriginalUrl(String originalUrl) {
         this.originalUrl = originalUrl;
     }
 

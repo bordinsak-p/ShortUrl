@@ -12,9 +12,6 @@ public class ShortUrls {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "code", nullable = false, unique = true)
-    private String code;
-
     @Column(name = "original_url", nullable = false)
     private String originalUrl;
 
