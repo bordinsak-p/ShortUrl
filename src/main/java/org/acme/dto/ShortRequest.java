@@ -4,7 +4,7 @@ import io.smallrye.common.constraint.NotNull;
 import org.acme.annotation.NoForbiddenWords;
 import org.acme.annotation.OutOfLengthUrl;
 
-public class ShortDto {
+public class ShortRequest {
     @NotNull
     @OutOfLengthUrl
     @NoForbiddenWords
@@ -14,10 +14,10 @@ public class ShortDto {
 
     private String expiresAt;
 
-    public ShortDto() {
+    public ShortRequest() {
     }
 
-    public ShortDto(String originalUrl) {
+    public ShortRequest(String originalUrl) {
         this.originalUrl = originalUrl;
     }
 

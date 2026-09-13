@@ -7,7 +7,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.acme.dto.ShortDto;
+import org.acme.dto.ShortRequest;
 import org.acme.service.ShortService;
 
 @Path("/api")
@@ -19,7 +19,7 @@ public class ShortResource {
     @Path("/links")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response generateShortUrl(ShortDto originalUrl) {
+    public Response generateShortUrl(ShortRequest originalUrl) {
         return Response.ok(shortService.generateShortUrl(originalUrl)).build();
     }
 }
