@@ -10,6 +10,10 @@ public class ShortDto {
     @NoForbiddenWords
     private String originalUrl;
 
+    private String customAlias;
+
+    private String expiresAt;
+
     public ShortDto() {
     }
 
@@ -23,6 +27,22 @@ public class ShortDto {
 
     public void setOriginalUrl(String originalUrl) {
         this.originalUrl = originalUrl;
+    }
+
+    public String getCustomAlias() {
+        return customAlias;
+    }
+
+    public void setCustomAlias(String customAlias) {
+        this.customAlias = customAlias;
+    }
+
+    public String getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(String expiresAt) {
+        this.expiresAt = expiresAt;
     }
 
 }
