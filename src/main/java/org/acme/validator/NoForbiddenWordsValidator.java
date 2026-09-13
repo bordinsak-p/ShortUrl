@@ -5,7 +5,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.acme.annotation.NoForbiddenWords;
-
 import java.util.List;
 
 public class NoForbiddenWordsValidator implements ConstraintValidator<NoForbiddenWords, String> {
@@ -14,7 +13,7 @@ public class NoForbiddenWordsValidator implements ConstraintValidator<NoForbidde
 
     @SuppressWarnings("unchecked")
     private List<String> getWordsList() {
-        return (List<String>) em.createNativeQuery("SELECT word FROM forbidden_words").getResultList();
+        return em.createNativeQuery("SELECT LOWER(word) FROM forbidden_words").getResultList();
     }
 
     // ถ้า value ไม่ตรงกันทั้งหมด return true

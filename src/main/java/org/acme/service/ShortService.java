@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import org.acme.dto.ShortRequest;
 import org.acme.dto.ShortResponse;
 import org.acme.entity.ShortUrls;
-import org.acme.util.GenerateShortCode;
+import org.acme.util.GenerateShort;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -21,7 +21,7 @@ public class ShortService {
 
     @Transactional
     public ShortResponse generateShortUrl(@Valid ShortRequest shortRequest) {
-        String code = shortRequest.getCustomAlias() != null ? shortRequest.getCustomAlias() : GenerateShortCode.generateCode(7);
+        String code = shortRequest.getCustomAlias() != null ? shortRequest.getCustomAlias() : GenerateShort.generateCode(7);
         String expiresAt = shortRequest.getExpiresAt() != null ? shortRequest.getExpiresAt() : null;
 
         var entity = new ShortUrls();
@@ -32,8 +32,18 @@ public class ShortService {
         entity.setDeletedAt(null);
         em.persist(entity);
 
-        String buildUrl = baseUrl + "/" + entity.getCode();
+        return new ShortResponse(entity.getCode(), GenerateShort.buildShortUrl(baseUrl, entity.getCode()), entity.getExpiresAt());
+    }
 
-        return new ShortResponse(entity.getCode(), buildUrl, entity.getExpiresAt());
+    public ShortResponse getShortUrl(String code) {
+        var entity = em.createQuery("SELECT s FROM ShortUrls s WHERE s.code = :code AND s.deletedAt IS NULL", ShortUrls.class)
+                .setParameter("code", code)
+                .getSingleResultOrNull();
+
+        if (entity == null) {
+            return null;
+        }
+
+        return new ShortResponse(entity.getCode(), GenerateShort.buildShortUrl(baseUrl, entity.getCode()), entity.getExpiresAt());
     }
 }

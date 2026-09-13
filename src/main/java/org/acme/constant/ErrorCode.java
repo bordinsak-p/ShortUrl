@@ -1,7 +1,7 @@
 package org.acme.constant;
 
 public class ErrorCode {
-    public ErrorCode() {
+    private ErrorCode() {
     }
 
     public static final String FIELD_REQUIRED = "FIELD_REQUIRED";
