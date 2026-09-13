@@ -3,7 +3,7 @@ CREATE TABLE short_urls (
     code TEXT NOT NULL UNIQUE,
     original_url TEXT NOT NULL,
     custom_alias TEXT UNIQUE,
-    created_at TEXT  DEFAULT CURRENT_TIMESTAMP,
+    expires_at TEXT  DEFAULT CURRENT_TIMESTAMP,
     deleted_at TEXT DEFAULT NULL
 );
 
