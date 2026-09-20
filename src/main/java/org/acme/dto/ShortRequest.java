@@ -7,9 +7,9 @@ import org.acme.annotation.OutOfLengthUrl;
 public class ShortRequest {
     @NotNull
     @OutOfLengthUrl
-    @NoForbiddenWords
     private String originalUrl;
 
+    @NoForbiddenWords
     private String customAlias;
 
     private String expiresAt;
