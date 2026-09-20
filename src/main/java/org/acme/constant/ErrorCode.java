@@ -8,6 +8,6 @@ public class ErrorCode {
     public static final String FORBIDDEN_WORD_DETECTED = "FORBIDDEN_WORD_DETECTED";
     public static final String INVALID_LENGTH = "INVALID_LENGTH";
     public static final String VALIDATION_ERROR = "VALIDATION_ERROR";
-
+    public static final String ALIAS_ALREADY_EXISTS = "ALIAS_ALREADY_EXISTS";
 
 }
