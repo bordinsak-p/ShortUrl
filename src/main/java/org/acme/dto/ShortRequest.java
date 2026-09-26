@@ -4,11 +4,11 @@ import io.smallrye.common.constraint.NotNull;
 import org.acme.annotation.NoForbiddenWords;
 import org.acme.annotation.OutOfLengthUrl;
 import org.acme.annotation.ValidExpiryDate;
-import org.hibernate.validator.constraints.UniqueElements;
 
 public class ShortRequest {
     @NotNull
     @OutOfLengthUrl
+    @NoForbiddenWords
     private String originalUrl;
 
     @NoForbiddenWords

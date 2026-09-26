@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.acme.dto.DeleteShortResponse;
 import org.acme.dto.ShortRequest;
 import org.acme.service.ShortService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -53,5 +54,28 @@ public class ShortResource {
 
 
         return Response.status(Response.Status.FOUND).location(URI.create(shortResponse.getOriginalUrl())).build();
+    }
+
+    @DELETE
+    @Path("links/{code}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deleteShortUrl(@PathParam("code") String code) {
+        var byCode = shortService.findByCode(code);
+
+        if(byCode == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if(byCode.getDeletedAt() != null) {
+            return  Response.status(Response.Status.GONE).entity(
+                    new DeleteShortResponse("deleted")
+            ).build();
+        }
+
+        shortService.deleteShort(code);
+
+        return  Response.status(Response.Status.NO_CONTENT).build();
+
     }
 }

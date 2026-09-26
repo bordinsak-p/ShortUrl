@@ -29,7 +29,7 @@ public class ShortService {
     public ShortResponse generateShortUrl(@Valid ShortRequest shortRequest) {
         String expiresAt = shortRequest.getExpiresAt() != null ? shortRequest.getExpiresAt() : null;
 
-        if(shortRequest.getCustomAlias() != null) {
+        if (shortRequest.getCustomAlias() != null) {
             var entity = new ShortUrls();
             entity.setCode(shortRequest.getCustomAlias());
             entity.setOriginalUrl(shortRequest.getOriginalUrl());
@@ -59,7 +59,7 @@ public class ShortService {
                     return new ShortResponse(entity.getCode(), GenerateShort.buildShortUrl(baseUrl, entity.getCode()), entity.getExpiresAt());
                 } catch (PersistenceException e) {
                     if (attempt == 3) {
-                        throw new WebApplicationException(Response.status(500).build());
+                        throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
                     }
                 }
             }
@@ -87,5 +87,18 @@ public class ShortService {
         Instant expiresDate = Instant.parse(expiresAt);
 
         return Instant.now().isAfter(expiresDate);
+    }
+
+    @Transactional
+    public void deleteShort(String code) {
+        em.createQuery("""
+                UPDATE ShortUrls s
+                    SET s.deletedAt = :now
+                WHERE s.code = :code
+                    AND s.deletedAt IS NULL
+                """)
+                .setParameter("now", Instant.now().toString())
+                .setParameter("code", code)
+                .executeUpdate();
     }
 }
