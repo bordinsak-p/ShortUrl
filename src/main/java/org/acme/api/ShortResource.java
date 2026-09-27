@@ -1,5 +1,7 @@
 package org.acme.api;
 
+import io.quarkus.qute.Template;
+import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -16,6 +18,9 @@ import java.util.Map;
 public class ShortResource {
     @Inject
     ShortService shortService;
+
+    @Inject
+    Template preview; // preview คือชื่อ file template.html ต้องตั้งชื่อให้ตรงกัน
 
     @ConfigProperty(name = "app.base-url")
     private String baseUrl;
@@ -52,14 +57,39 @@ public class ShortResource {
             ).build();
         }
 
-
         return Response.status(Response.Status.FOUND).location(URI.create(shortResponse.getOriginalUrl())).build();
+    }
+
+    @GET
+    @Path("/links/{code: [A-Za-z0-9_-]+}/preview")
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance preview(@PathParam("code") String code){
+        var byCode = shortService.findByCode(code);
+
+        if(byCode == null){
+            throw  new NotFoundException(
+                    Response.status(Response.Status.NOT_FOUND).build()
+            );
+        }
+
+        if (byCode.getDeletedAt() != null) {
+            throw new WebApplicationException(Response.status(Response.Status.GONE).entity(
+                    Map.of("deletedAt", byCode.getDeletedAt())
+            ).build());
+        }
+
+        if (shortService.isExpired(byCode.getExpiresAt())) {
+            throw new WebApplicationException(Response.status(Response.Status.GONE).entity(
+                    Map.of("expiresAt", byCode.getExpiresAt())
+            ).build());
+        }
+
+        return preview.data("originalUrl", byCode.getOriginalUrl());
     }
 
     @DELETE
     @Path("links/{code}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteShortUrl(@PathParam("code") String code) {
         var byCode = shortService.findByCode(code);
 

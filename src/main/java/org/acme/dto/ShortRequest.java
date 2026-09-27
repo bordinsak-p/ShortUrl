@@ -1,6 +1,6 @@
 package org.acme.dto;
 
-import io.smallrye.common.constraint.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.acme.annotation.NoForbiddenWords;
 import org.acme.annotation.OutOfLengthUrl;
 import org.acme.annotation.ValidExpiryDate;
