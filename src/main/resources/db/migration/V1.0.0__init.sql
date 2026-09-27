@@ -1,6 +1,5 @@
 CREATE TABLE short_urls (
-    id INTEGER PRIMARY KEY,
-    code TEXT NOT NULL UNIQUE,
+    code TEXT PRIMARY KEY,
     original_url TEXT NOT NULL,
     custom_alias TEXT UNIQUE,
     expires_at TEXT  DEFAULT CURRENT_TIMESTAMP,
