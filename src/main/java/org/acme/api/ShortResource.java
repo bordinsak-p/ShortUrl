@@ -3,6 +3,7 @@ package org.acme.api;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -29,7 +30,7 @@ public class ShortResource {
     @Path("/links")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response generateShortUrl(ShortRequest originalUrl) {
+    public Response generateShortUrl(@Valid ShortRequest originalUrl) {
         return Response.status(Response.Status.CREATED).entity(shortService.generateShortUrl(originalUrl)).build();
     }
 

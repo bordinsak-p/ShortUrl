@@ -6,7 +6,6 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.acme.dto.ShortRequest;
@@ -26,7 +25,7 @@ public class ShortService {
     private String baseUrl;
 
     @Transactional
-    public ShortResponse generateShortUrl(@Valid ShortRequest shortRequest) {
+    public ShortResponse generateShortUrl(ShortRequest shortRequest) {
         String expiresAt = shortRequest.getExpiresAt() != null ? shortRequest.getExpiresAt() : null;
 
         if (shortRequest.getCustomAlias() != null) {

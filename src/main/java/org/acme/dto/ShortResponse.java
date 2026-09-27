@@ -9,6 +9,8 @@ public class ShortResponse {
     private String deletedAt;
     private String originalUrl;
 
+    private String customAlias;
+
     public ShortResponse() {
     }
 

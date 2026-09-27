@@ -20,6 +20,12 @@ public class ShortRequest {
     public ShortRequest() {
     }
 
+    public ShortRequest(String originalUrl, String customAlias, String expiresAt) {
+        this.originalUrl = originalUrl;
+        this.customAlias = customAlias;
+        this.expiresAt = expiresAt;
+    }
+
     public ShortRequest(String originalUrl) {
         this.originalUrl = originalUrl;
     }
