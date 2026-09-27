@@ -21,7 +21,7 @@ class ShortUrlTest {
     @Test
     void generateShortUrl() {
         var req = new ShortRequest();
-        req.setOriginalUrl("https://www.youtube.com/watch?v=KmxEbeb-2DQ&list=RDKmxEbeb-2DQ&start_radio=1");
+        req.setOriginalUrl("https://www.wikipedia.org");
         req.setExpiresAt(null);
         req.setCustomAlias(null);
 
@@ -37,7 +37,7 @@ class ShortUrlTest {
         String exp = Instant.now().plus(Duration.ofHours(1)).toString();
 
         var req = new ShortRequest();
-        req.setOriginalUrl("https://www.youtube.com/watch?v=KmxEbeb-2DQ&list=RDKmxEbeb-2DQ&start_radio=1");
+        req.setOriginalUrl("https://www.wikipedia.org");
         req.setExpiresAt(exp);
         req.setCustomAlias(null);
 
@@ -49,7 +49,7 @@ class ShortUrlTest {
     @Test
     void generateShortUrlByCustomAlias() {
         var req = new ShortRequest();
-        req.setOriginalUrl("https://www.youtube.com/watch?v=KmxEbeb-2DQ&list=RDKmxEbeb-2DQ&start_radio=1");
+        req.setOriginalUrl("https://www.wikipedia.org");
         req.setExpiresAt(null);
         req.setCustomAlias("test-alias");
 
@@ -62,7 +62,7 @@ class ShortUrlTest {
     @Test
     void  generateShortUrlSameCustomAlias() {
         var req = new ShortRequest();
-        req.setOriginalUrl("https://www.youtube.com/watch?v=KmxEbeb-2DQ&list=RDKmxEbeb-2DQ&start_radio=1");
+        req.setOriginalUrl("https://www.wikipedia.org");
         req.setExpiresAt(null);
         req.setCustomAlias("test-alias");
 
