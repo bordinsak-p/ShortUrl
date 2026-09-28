@@ -4,10 +4,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.acme.dto.ShortRequest;
 import org.acme.dto.ShortResponse;
+import org.acme.exception.AliasAlreadyExistsException;
 import org.acme.service.ShortService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.sqlite.SQLiteException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -60,17 +60,17 @@ class ShortUrlTest {
     }
 
     @Test
-    void  generateShortUrlSameCustomAlias() {
+    void generateShortUrlSameCustomAlias() {
         var req = new ShortRequest();
         req.setOriginalUrl("https://www.wikipedia.org");
         req.setExpiresAt(null);
         req.setCustomAlias("test-alias");
 
-        Exception ex = Assertions.assertThrows(Exception.class,() -> shortService.generateShortUrl(req));   // ครั้งที่สอง ต้องพัง
+        Exception ex = Assertions.assertThrows(AliasAlreadyExistsException.class,() -> shortService.generateShortUrl(req));   // ครั้งที่สอง ต้องพัง
 
         Throwable root = rootCause(ex);
-        Assertions.assertInstanceOf(SQLiteException.class, root);
-        Assertions.assertTrue(root.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE"));
+        Assertions.assertInstanceOf(AliasAlreadyExistsException.class, root);
+        Assertions.assertTrue(root.getMessage().contains("Custom alias already in use"));
     }
     private static Throwable rootCause(Throwable t) {
         while (t.getCause() != null && t.getCause() != t) {
@@ -79,4 +79,19 @@ class ShortUrlTest {
         return t;
     }
 
+    @Test
+    void deleteShortByCode() {
+        var req = new ShortRequest();
+        req.setOriginalUrl("https://www.wikipedia.org");
+        req.setExpiresAt(null);
+        req.setCustomAlias(null);
+
+        ShortResponse shortResponse = shortService.generateShortUrl(req);
+
+        shortService.deleteShort(shortResponse.getCode());
+
+        ShortResponse byCode = shortService.findByCode(shortResponse.getCode());
+
+        Assertions.assertNotNull(byCode.getDeletedAt());
+    }
 }
