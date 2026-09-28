@@ -1,5 +1,6 @@
 package org.acme.service;
 
+import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -11,6 +12,7 @@ import jakarta.ws.rs.core.Response;
 import org.acme.dto.ShortRequest;
 import org.acme.dto.ShortResponse;
 import org.acme.entity.ShortUrls;
+import org.acme.exception.AliasAlreadyExistsException;
 import org.acme.util.GenerateShort;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -24,6 +26,9 @@ public class ShortService {
     @ConfigProperty(name = "app.base-url")
     private String baseUrl;
 
+    private static final int MAX_ATTEMPTS = 3;
+    private static final int CODE_LENGTH = 7;
+
     @Transactional
     public ShortResponse generateShortUrl(ShortRequest shortRequest) {
         String expiresAt = shortRequest.getExpiresAt() != null ? shortRequest.getExpiresAt() : null;
@@ -35,35 +40,44 @@ public class ShortService {
             entity.setCustomAlias(shortRequest.getCustomAlias());
             entity.setExpiresAt(expiresAt);
             entity.setDeletedAt(null);
-            em.persist(entity);
+
+            try {
+                em.persist(entity);
+                em.flush();
+            } catch (PersistenceException e) {
+                throw new AliasAlreadyExistsException("Custom alias already in use");
+            }
 
             return new ShortResponse(entity.getCode(), GenerateShort.buildShortUrl(baseUrl, entity.getCode()), entity.getExpiresAt());
 
         } else {
             // Retry กรณี generate code ซ้ำกัน (code เป็น unique)
             // แต่ generate code อาจมีโอก่ศนซ้ำกันได้
-            for (int attempt = 1; attempt <= 3; attempt++) {
-                String shortCode = GenerateShort.generateCode(7);
+            for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+                String shortCode = GenerateShort.generateCode(CODE_LENGTH);
+
+                var entity = new ShortUrls();
+                entity.setCode(shortCode);
+                entity.setOriginalUrl(shortRequest.getOriginalUrl());
+                entity.setCustomAlias(shortRequest.getCustomAlias());
+                entity.setExpiresAt(expiresAt);
+                entity.setDeletedAt(null);
+
                 try {
-                    var entity = new ShortUrls();
                     QuarkusTransaction.requiringNew().run(() -> {
-                        entity.setCode(shortCode);
-                        entity.setOriginalUrl(shortRequest.getOriginalUrl());
-                        entity.setCustomAlias(shortRequest.getCustomAlias());
-                        entity.setExpiresAt(expiresAt);
-                        entity.setDeletedAt(null);
                         em.persist(entity);
                         em.flush();
                     });
                     return new ShortResponse(entity.getCode(), GenerateShort.buildShortUrl(baseUrl, entity.getCode()), entity.getExpiresAt());
                 } catch (PersistenceException e) {
-                    if (attempt == 3) {
+                    if (attempt == MAX_ATTEMPTS) {
                         throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
                     }
+                    Log.warnf("Short code collision: %s (attempt %d/%d)", entity.getCode(), attempt, MAX_ATTEMPTS);
                 }
             }
         }
-        throw new IllegalStateException("unreachable");
+        throw new WebApplicationException("Cannot generate unique short code", Response.Status.INTERNAL_SERVER_ERROR);
     }
 
     public ShortResponse findByCode(String code) {

@@ -9,5 +9,6 @@ public class ErrorCode {
     public static final String INVALID_LENGTH = "INVALID_LENGTH";
     public static final String VALIDATION_ERROR = "VALIDATION_ERROR";
     public static final String ALIAS_ALREADY_EXISTS = "ALIAS_ALREADY_EXISTS";
+    public static final String INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
 }
