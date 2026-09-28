@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.acme.constant.Message;
 import org.acme.dto.DeleteShortResponse;
 import org.acme.dto.ShortRequest;
 import org.acme.service.ShortService;
@@ -22,6 +23,14 @@ public class ShortResource {
 
     @Inject
     Template preview; // preview คือชื่อ file template.html ต้องตั้งชื่อให้ตรงกัน
+
+    @Inject
+    Template linkError;
+
+    private static final String TITLE = "title";
+    private static final String STATUS = "status";
+    private static final String DETAIL = "detail";
+
 
     @ConfigProperty(name = "app.base-url")
     private String baseUrl;
@@ -64,25 +73,25 @@ public class ShortResource {
     @GET
     @Path("/links/{code: [A-Za-z0-9_-]+}/preview")
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance preview(@PathParam("code") String code){
+    public TemplateInstance preview(@PathParam("code") String code) {
         var byCode = shortService.findByCode(code);
 
-        if(byCode == null){
-            throw  new NotFoundException(
-                    Response.status(Response.Status.NOT_FOUND).build()
-            );
+        if (byCode == null) {
+            return linkError.data(TITLE, Message.LINK_NOT_FOUND)
+                    .data(STATUS, Response.Status.NOT_FOUND.getStatusCode())
+                    .data(DETAIL, Message.LINK_NOT_FOUND_DETAIL);
         }
 
         if (byCode.getDeletedAt() != null) {
-            throw new WebApplicationException(Response.status(Response.Status.GONE).entity(
-                    Map.of("deletedAt", byCode.getDeletedAt())
-            ).build());
+            return linkError.data(TITLE, Message.LINK_REMOVED)
+                    .data(STATUS, Response.Status.GONE.getStatusCode())
+                    .data(DETAIL, Message.LINK_REMOVED_DETAIL);
         }
 
         if (shortService.isExpired(byCode.getExpiresAt())) {
-            throw new WebApplicationException(Response.status(Response.Status.GONE).entity(
-                    Map.of("expiresAt", byCode.getExpiresAt())
-            ).build());
+            return linkError.data(TITLE, Message.LINK_EXPIRED)
+                    .data(STATUS, Response.Status.GONE.getStatusCode())
+                    .data(DETAIL, Message.LINK_EXPIRED_DETAIL + byCode.getExpiresAt());
         }
 
         return preview.data("originalUrl", byCode.getOriginalUrl());
@@ -94,19 +103,19 @@ public class ShortResource {
     public Response deleteShortUrl(@PathParam("code") String code) {
         var byCode = shortService.findByCode(code);
 
-        if(byCode == null) {
+        if (byCode == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if(byCode.getDeletedAt() != null) {
-            return  Response.status(Response.Status.GONE).entity(
+        if (byCode.getDeletedAt() != null) {
+            return Response.status(Response.Status.GONE).entity(
                     new DeleteShortResponse("deleted")
             ).build();
         }
 
         shortService.deleteShort(code);
 
-        return  Response.status(Response.Status.NO_CONTENT).build();
+        return Response.status(Response.Status.NO_CONTENT).build();
 
     }
 }
