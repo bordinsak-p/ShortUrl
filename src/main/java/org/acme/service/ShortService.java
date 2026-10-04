@@ -94,10 +94,10 @@ public class ShortService {
     public ShortResponse findByCode(String code) {
         ValueCommands<String, ShortResponse> initCache = redis.value(ShortResponse.class);
 
-        var shortCahed = initCache.get(cacheKey(code));
+        var shortCached = initCache.get(cacheKey(code));
 
-        if (shortCahed != null) {
-            return shortResponse(shortCahed);
+        if (shortCached != null) {
+            return shortResponse(shortCached);
         }
 
         ShortUrls entity = em.createQuery("SELECT s FROM ShortUrls s WHERE s.code = :code", ShortUrls.class)
