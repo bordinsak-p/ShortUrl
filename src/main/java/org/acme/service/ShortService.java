@@ -2,8 +2,6 @@ package org.acme.service;
 
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -15,6 +13,7 @@ import org.acme.dto.ShortRequest;
 import org.acme.dto.ShortResponse;
 import org.acme.entity.ShortUrls;
 import org.acme.exception.AliasAlreadyExistsException;
+import org.acme.util.CacheUtil;
 import org.acme.util.GenerateShort;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -26,7 +25,7 @@ public class ShortService {
     private EntityManager em;
 
     @Inject
-    RedisDataSource redis;
+    CacheUtil cache;
 
     @ConfigProperty(name = "app.base-url")
     private String baseUrl;
@@ -92,9 +91,7 @@ public class ShortService {
     }
 
     public ShortResponse findByCode(String code) {
-        ValueCommands<String, ShortResponse> initCache = redis.value(ShortResponse.class);
-
-        var shortCached = initCache.get(cacheKey(code));
+        var shortCached = cache.getFromCache(cacheKey(code), ShortResponse.class);
 
         if (shortCached != null) {
             return shortResponse(shortCached);
@@ -115,7 +112,7 @@ public class ShortService {
                 entity.getDeletedAt(),
                 entity.getOriginalUrl());
 
-        initCache.setex(cacheKey(code), 600, response);
+        cache.putToCache(cacheKey(code), response, ShortResponse.class);
 
         return response;
     }
@@ -148,6 +145,6 @@ public class ShortService {
                 .executeUpdate();
 
         // ลบ cache เก่าทิ้ง
-        redis.key().del(cacheKey(code));
+        cache.removeCache(cacheKey(code));
     }
 }

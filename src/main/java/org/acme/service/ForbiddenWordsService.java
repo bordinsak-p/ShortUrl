@@ -1,11 +1,10 @@
 package org.acme.service;
 
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import org.acme.dto.ForbiddenWords;
+import org.acme.util.CacheUtil;
 
 import java.util.List;
 
@@ -15,16 +14,14 @@ public class ForbiddenWordsService {
     EntityManager em;
 
     @Inject
-    RedisDataSource redis;
+    CacheUtil cache;
 
     private static final String KEY = "forbiddenWords:";
 
     @SuppressWarnings("unchecked")
     public List<String> getWordsList() {
-        ValueCommands<String, ForbiddenWords> initCache = redis.value(ForbiddenWords.class);
-
         // Try cache first
-        ForbiddenWords forbiddenWordsCached = initCache.get(KEY);
+        ForbiddenWords forbiddenWordsCached = cache.getFromCache(KEY, ForbiddenWords.class);
         if(forbiddenWordsCached != null) {
             return forbiddenWordsCached.words();
         }
@@ -33,7 +30,7 @@ public class ForbiddenWordsService {
         List<String> words = em.createNativeQuery("SELECT LOWER(word) FROM forbidden_words").getResultList();
 
         // Store in cache with TTL
-        initCache.setex(KEY, 600, new ForbiddenWords(words));
+        cache.putToCache(KEY, new ForbiddenWords(words), ForbiddenWords.class);
 
         return  words;
     }
