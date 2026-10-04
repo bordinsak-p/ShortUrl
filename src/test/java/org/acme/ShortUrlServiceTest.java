@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 @QuarkusTest
-class ShortUrlTest {
+class ShortUrlServiceTest {
 
     @Inject
     ShortService shortService;
