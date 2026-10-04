@@ -1,15 +1,11 @@
 package org.acme.dto;
 
-import org.acme.entity.ShortUrls;
-
 public class ShortResponse {
     private String code;
     private String shortUrl;
     private String expiresAt;
     private String deletedAt;
     private String originalUrl;
-
-    private String customAlias;
 
     public ShortResponse() {
     }
@@ -36,11 +32,12 @@ public class ShortResponse {
         this.deletedAt = deletedAt;
     }
 
-    public ShortResponse(ShortUrls entity) {
-        this.code = entity.getCode();
-        this.expiresAt = entity.getExpiresAt();
-        this.deletedAt = entity.getDeletedAt();
-        this.originalUrl = entity.getOriginalUrl();
+    public ShortResponse(String code, String shortUrl, String expiresAt, String deletedAt, String originalUrl) {
+        this.code = code;
+        this.expiresAt = expiresAt;
+        this.shortUrl = shortUrl;
+        this.deletedAt = deletedAt;
+        this.originalUrl = originalUrl;
     }
 
     public void setShortUrl(String shortUrl) {

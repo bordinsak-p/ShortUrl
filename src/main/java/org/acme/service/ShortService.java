@@ -2,6 +2,8 @@ package org.acme.service;
 
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -23,11 +25,20 @@ public class ShortService {
     @Inject
     private EntityManager em;
 
+    @Inject
+    RedisDataSource redis;
+
     @ConfigProperty(name = "app.base-url")
     private String baseUrl;
 
     private static final int MAX_ATTEMPTS = 3;
     private static final int CODE_LENGTH = 7;
+
+    private static final String SHORT_KEY = "short";
+
+    private String cacheKey(String code) {
+        return SHORT_KEY + ":" + code;
+    }
 
     @Transactional
     public ShortResponse generateShortUrl(ShortRequest shortRequest) {
@@ -81,7 +92,15 @@ public class ShortService {
     }
 
     public ShortResponse findByCode(String code) {
-        var entity = em.createQuery("SELECT s FROM ShortUrls s WHERE s.code = :code", ShortUrls.class)
+        ValueCommands<String, ShortResponse> initCache = redis.value(ShortResponse.class);
+
+        var shortCahed = initCache.get(cacheKey(code));
+
+        if (shortCahed != null) {
+            return shortResponse(shortCahed);
+        }
+
+        ShortUrls entity = em.createQuery("SELECT s FROM ShortUrls s WHERE s.code = :code", ShortUrls.class)
                 .setParameter("code", code)
                 .getSingleResultOrNull();
 
@@ -89,7 +108,21 @@ public class ShortService {
             return null;
         }
 
-        return new ShortResponse(entity);
+        var response = new ShortResponse(
+                entity.getCode(),
+                GenerateShort.buildShortUrl(baseUrl, entity.getCode()),
+                entity.getExpiresAt(),
+                entity.getDeletedAt(),
+                entity.getOriginalUrl());
+
+        initCache.setex(cacheKey(code), 600, response);
+
+        return response;
+    }
+
+    private ShortResponse shortResponse(ShortResponse val) {
+        var shortUrl = GenerateShort.buildShortUrl(baseUrl, val.getCode());
+        return new ShortResponse(val.getCode(), shortUrl, val.getExpiresAt(), val.getDeletedAt(), val.getOriginalUrl());
     }
 
     public boolean isExpired(String expiresAt) {
@@ -113,5 +146,8 @@ public class ShortService {
                 .setParameter("now", Instant.now().toString())
                 .setParameter("code", code)
                 .executeUpdate();
+
+        // ลบ cache เก่าทิ้ง
+        redis.key().del(cacheKey(code));
     }
 }
